@@ -31,6 +31,15 @@ Samples below are a few files so you can inspect texture. They are **not** the t
 | Dataset repo | https://github.com/huoguanying/SeabedObjects-Ship-and-Airplane-dataset |
 
 AI4 labels: PNG mask, `0` = seafloor, `1` = wreck. **161 / 286** images contain a wreck.
+YOLO boxes (one tight box per mask, class `0` = wreck) are written next to the masks:
+
+```
+py -3 train/masks_to_boxes.py --root data/AI4Shipwrecks
+```
+
+Output: `data/AI4Shipwrecks/{train,test,extras/terrain}/boxes/*.txt`
+
+**SeabedObjects-KLSG** is SSS chips with **no boxes and no masks** (image-level class only). Do not use it for detection.
 
 ```bash
 curl -L -o AI4Shipwrecks.zip "https://deepblue.lib.umich.edu/data/downloads/db78tc698"
@@ -53,6 +62,8 @@ curl -L -o AI4Shipwrecks.zip "https://deepblue.lib.umich.edu/data/downloads/db78
 | Marine PULSE record | https://zenodo.org/records/7922705 |
 
 Use **SubPipeMini2**, not SubPipeMini (Mini is camera segmentation). Folder in the full set: `SSS_HF_images/` and `SSS_LF_images/` with `YOLO_Annotation/` and `COCO_Annotation/`.
+
+**Marine PULSE** is SSS chips with **no boxes and no masks** (folder-level classification). Do not use it for detection. Keep SubPipe Mini2 only.
 
 ```bash
 curl -L -o SubPipeMini2.zip "https://zenodo.org/records/12666132/files/SubPipeMini2.zip?download=1"
@@ -113,12 +124,22 @@ https://github.com/remaro-network/OpenSonarDatasets — table of datasets. For t
 
 ---
 
-## Counts (full SSS labeled sets, not the samples)
+## Detection sets only (SSS + boxes, or SSS masks converted to boxes)
+
+Only links already listed above. Skip classification-only chips and camera/FLS dumps.
+
+| Class | Keep | Skip | Labels for detection |
+| --- | --- | --- | --- |
+| shipwreck | AI4Shipwrecks | SeabedObjects-KLSG (no box/mask) | masks → YOLO in `boxes/` |
+| pipe | SubPipe Mini2 | Marine PULSE (no box/mask); full SubPipe (cameras); SubPipeMini (camera) | native YOLO/COCO boxes |
+| cylinder | Gavia MILCO/NOMBO | — | native YOLO boxes |
+| ghost gear | GhostVision HF crab pots | GhostNetZero (paper only; SSS masks exist but no public dump in this README) | native JSONL boxes |
+
+## Counts (detection-ready SSS sets, not the samples)
 
 | Class | Dataset | SSS images | Labels |
 | --- | --- | --- | --- |
-| shipwreck | AI4Shipwrecks | 286 | pixel masks (161 positive) |
-| pipe | SubPipe | 10,030 | 6,335 boxes |
+| shipwreck | AI4Shipwrecks | 286 | masks → boxes (161 positive) |
+| pipe | SubPipe Mini2 | 10,030 | 6,335 boxes |
 | cylinder proxy | Gavia MILCO/NOMBO | 1,170 | 432 MILCO + 235 NOMBO boxes |
 | ghost gear | GhostVision HF | 6,674 (after license) | JSONL boxes |
-| **SSS total (open, no HF)** | | **11,486** | |
