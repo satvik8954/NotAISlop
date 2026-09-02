@@ -91,13 +91,18 @@ pip install -r requirements.txt
 python -m app
 ```
 
-## Datasets used
+## Datasets (side-scan sonar only)
 
-- **NOMBO/MILCO** — 1,170 annotated side-scan sonar images (mine-like vs. non-mine-like bottom objects)
-- **SeabedObjects-KLSG / KLSG-II** — real-world SSS shipwreck detection benchmarks
-- **SCTD** — annotated sonar target dataset for shadow-based discrimination
+Inspection samples and **direct download links** live in [`data/README.md`](data/README.md). Folders:
 
-None of these are debris-labeled directly — we fine-tune in stages (general object-vs-clutter discrimination → debris-specific adaptation) to bridge the gap.
+| Class | `data/` | Full SSS set |
+| --- | --- | --- |
+| Shipwrecks | `data/shipwrecks/samples/` | AI4Shipwrecks (masks) + SeabedObjects chips |
+| Pipes | `data/pipes/samples/` | SubPipe Mini2 (YOLO/COCO) + Marine PULSE chips |
+| Cylinders | `data/cylinders/samples/` | Gavia AUV MILCO/NOMBO YOLO |
+| Ghost nets / gear | `data/ghost_nets/` | GhostVision Humminbird SSS (HF license required) |
+
+**Not used:** FLS, ARIS, DIDSON, camera RGB, UXO FLS. Sample files are a few SSS images for visual check, not the full training corpus.
 
 ## Roadmap
 
