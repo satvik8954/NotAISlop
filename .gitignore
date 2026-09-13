@@ -4,3 +4,11 @@
 __pycache__/
 *.pyc
 .venv/
+
+# Prototype build artifacts & generated outputs
+data_prepared/
+outputs/*.png
+outputs/*.json
+outputs/*.csv
+models/*.joblib
+echotrace_prototype/
