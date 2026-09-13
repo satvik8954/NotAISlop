@@ -1,0 +1,39 @@
+{
+  "background": {
+    "precision": 0.652542372881356,
+    "recall": 0.77,
+    "f1-score": 0.7064220183486238,
+    "support": 100.0
+  },
+  "cylinder": {
+    "precision": 0.8,
+    "recall": 0.8,
+    "f1-score": 0.8,
+    "support": 5.0
+  },
+  "pipe": {
+    "precision": 0.9090909090909091,
+    "recall": 1.0,
+    "f1-score": 0.9523809523809523,
+    "support": 20.0
+  },
+  "shipwreck": {
+    "precision": 0.75,
+    "recall": 0.6,
+    "f1-score": 0.6666666666666666,
+    "support": 100.0
+  },
+  "accuracy": 0.7155555555555555,
+  "macro avg": {
+    "precision": 0.7779083204930662,
+    "recall": 0.7925000000000001,
+    "f1-score": 0.7813674093490607,
+    "support": 225.0
+  },
+  "weighted avg": {
+    "precision": 0.7219380243109057,
+    "recall": 0.7155555555555555,
+    "f1-score": 0.712695500218436,
+    "support": 225.0
+  }
+}

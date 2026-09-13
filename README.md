@@ -107,11 +107,39 @@ Inspection samples and **direct download links** live in [`data/README.md`](data
 ## Roadmap
 
 - [ ] Data ingestion + pre-processing pipeline
-- [ ] Baseline detector trained on unified public datasets
+- [x] Baseline detector trained on unified public datasets (HOG+SVM baseline on committed sample data)
 - [ ] Shadow-consistency confidence module
 - [ ] Geotagging + report generation
 - [ ] Dashboard with confidence-threshold slider
 - [ ] Edge deployment benchmark (ONNX/TensorRT inference speed)
+
+## Prototype Status (HOG+SVM Baseline)
+
+An end-to-end working baseline pipeline has been built and integrated into the repository using the sample data currently committed:
+
+- **Pipeline Modules Implemented:**
+  - `train/prepare_datasets.py`: Unifies label formats and tiles large sonar images into 256×256 patches.
+  - `train/train_detector.py`: Trains a fast HOG + Linear-SVM tile classifier.
+  - `detect.py`: Sliding-window detection with a nadir/no-return guard (skips featureless low-variance strips).
+  - `shadow_filter.py`: Acoustic shadow-consistency confidence scoring module.
+  - `report.py`: Generates structured JSON and CSV reports with geotags (`geotag: not_available_no_nav_metadata` when nav track is absent).
+  - `run_demo.py`: Demo entrypoint executing the pipeline across test images.
+
+- **Model Trade-off (HOG+SVM vs. YOLO/U-Net):**
+  - With only 5 pipe images and 3 cylinder images committed in the repo samples, deep learning models (YOLO/U-Net) would severely overfit to noise. HOG+SVM provides a fast, interpretable classical baseline to prove the end-to-end architecture before scaling.
+
+- **Validation Results (`models/val_report.json`):**
+  - **Overall Accuracy:** 72%
+  - **Pipes:** 0.91 Precision, 1.00 Recall (F1: 0.95)
+  - **Cylinders:** 0.80 Precision, 0.80 Recall (F1: 0.80)
+  - **Shipwrecks:** 0.75 Precision, 0.60 Recall (F1: 0.67)
+
+- **Known Limitations & Next Steps:**
+  - On full-image sliding-window inference, the classifier exhibits false positive over-firing due to tile-level contrast matching on small sample sets.
+  - **Fix Priorities:**
+    1. Download full external datasets (AI4Shipwrecks, SubPipe, Gavia) beyond committed samples.
+    2. Transition to YOLOv8n fine-tuning once dataset volume is expanded.
+    3. Implement hard-negative mining using false positives generated during sliding-window inference.
 
 ## Team
 
@@ -120,3 +148,4 @@ EchoTrace#26 — Smart India Hackathon 2026
 ## License
 
 TBD
+
