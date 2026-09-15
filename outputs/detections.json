@@ -1,0 +1,690 @@
+[
+  {
+    "detection_id": "Corsair_01.png_0",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.99,
+    "raw_confidence": 0.9927101288327931,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      1056,
+      288,
+      1312,
+      544
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505116Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_1",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.99,
+    "raw_confidence": 0.9916637550659951,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      1056,
+      1344,
+      1312,
+      1600
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505155Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_2",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.99,
+    "raw_confidence": 0.9913051004440054,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      768,
+      384,
+      1024,
+      640
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505170Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_3",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.986,
+    "raw_confidence": 0.9859890746169452,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      672,
+      1440,
+      928,
+      1696
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505181Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_4",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.985,
+    "raw_confidence": 0.9852211450851982,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      768,
+      96,
+      1024,
+      352
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505192Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_5",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.985,
+    "raw_confidence": 0.9852038215156669,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      672,
+      768,
+      928,
+      1024
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505203Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_6",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.981,
+    "raw_confidence": 0.980541210728172,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      1056,
+      672,
+      1312,
+      928
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505214Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_7",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.979,
+    "raw_confidence": 0.9795094789778367,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      768,
+      960,
+      1024,
+      1216
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505224Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_8",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.948,
+    "raw_confidence": 0.9770101051839915,
+    "shadow_multiplier": 0.971,
+    "bbox_px": [
+      768,
+      1152,
+      1024,
+      1408
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505235Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_9",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.976,
+    "raw_confidence": 0.9761581666520759,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      1056,
+      1056,
+      1312,
+      1312
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505246Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_10",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.942,
+    "raw_confidence": 0.9758885381930154,
+    "shadow_multiplier": 0.965,
+    "bbox_px": [
+      768,
+      576,
+      1024,
+      832
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505257Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_11",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.976,
+    "raw_confidence": 0.9757139265512341,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      1056,
+      864,
+      1312,
+      1120
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505273Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_12",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.967,
+    "raw_confidence": 0.9754609285791634,
+    "shadow_multiplier": 0.991,
+    "bbox_px": [
+      480,
+      864,
+      736,
+      1120
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505283Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_13",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.975,
+    "raw_confidence": 0.9752452966027128,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      1056,
+      96,
+      1312,
+      352
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505293Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_14",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.944,
+    "raw_confidence": 0.9440471479852045,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      960,
+      480,
+      1216,
+      736
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505304Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_15",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.928,
+    "raw_confidence": 0.9282835148808284,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      960,
+      1536,
+      1216,
+      1792
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505314Z"
+  },
+  {
+    "detection_id": "Corsair_01.png_16",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Corsair_01.png",
+    "class": "shipwreck",
+    "confidence": 0.865,
+    "raw_confidence": 0.8753665155538884,
+    "shadow_multiplier": 0.989,
+    "bbox_px": [
+      864,
+      768,
+      1120,
+      1024
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:51.505323Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_0",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.983,
+    "raw_confidence": 0.994239299734508,
+    "shadow_multiplier": 0.989,
+    "bbox_px": [
+      768,
+      1056,
+      1024,
+      1312
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073663Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_1",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.942,
+    "raw_confidence": 0.9907890197837704,
+    "shadow_multiplier": 0.951,
+    "bbox_px": [
+      576,
+      1152,
+      832,
+      1408
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073676Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_2",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.395,
+    "raw_confidence": 0.9864268955532699,
+    "shadow_multiplier": 0.4,
+    "bbox_px": [
+      768,
+      672,
+      1024,
+      928
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073681Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_3",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.984,
+    "raw_confidence": 0.9844408367990568,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      576,
+      768,
+      832,
+      1024
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073685Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_4",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.956,
+    "raw_confidence": 0.9836784929618047,
+    "shadow_multiplier": 0.972,
+    "bbox_px": [
+      768,
+      0,
+      1024,
+      256
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073688Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_5",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.982,
+    "raw_confidence": 0.9824234267564164,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      768,
+      1344,
+      1024,
+      1600
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073693Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_6",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.982,
+    "raw_confidence": 0.9820531216980376,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      576,
+      576,
+      832,
+      832
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073697Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_7",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.99,
+    "raw_confidence": 0.9796527349732773,
+    "shadow_multiplier": 1.15,
+    "bbox_px": [
+      768,
+      480,
+      1024,
+      736
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073701Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_8",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.979,
+    "raw_confidence": 0.9787803342952652,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      576,
+      1344,
+      832,
+      1600
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073705Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_9",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.918,
+    "raw_confidence": 0.9705834495108023,
+    "shadow_multiplier": 0.945,
+    "bbox_px": [
+      576,
+      288,
+      832,
+      544
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073709Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_10",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.97,
+    "raw_confidence": 0.9698284044806398,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      768,
+      192,
+      1024,
+      448
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073713Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_11",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.95,
+    "raw_confidence": 0.9511663934567076,
+    "shadow_multiplier": 0.999,
+    "bbox_px": [
+      576,
+      0,
+      832,
+      256
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073716Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_12",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.931,
+    "raw_confidence": 0.9425765594030856,
+    "shadow_multiplier": 0.987,
+    "bbox_px": [
+      960,
+      1056,
+      1216,
+      1312
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073769Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_13",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.936,
+    "raw_confidence": 0.9395032857265998,
+    "shadow_multiplier": 0.997,
+    "bbox_px": [
+      960,
+      192,
+      1216,
+      448
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073774Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_14",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.804,
+    "raw_confidence": 0.9065189732354194,
+    "shadow_multiplier": 0.887,
+    "bbox_px": [
+      960,
+      576,
+      1216,
+      832
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073778Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_15",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.864,
+    "raw_confidence": 0.8907442946839587,
+    "shadow_multiplier": 0.97,
+    "bbox_px": [
+      576,
+      960,
+      832,
+      1216
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073782Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_16",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.888,
+    "raw_confidence": 0.8878773079076279,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      960,
+      1344,
+      1216,
+      1600
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073787Z"
+  },
+  {
+    "detection_id": "Monrovia_02.png_17",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\AI4Shipwrecks\\test\\images\\Monrovia_02.png",
+    "class": "shipwreck",
+    "confidence": 0.888,
+    "raw_confidence": 0.8878160441147341,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      960,
+      384,
+      1216,
+      640
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:57.073791Z"
+  },
+  {
+    "detection_id": "1693569523.810.png_0",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\pipes\\images\\1693569523.810.png",
+    "class": "pipe",
+    "confidence": 0.974,
+    "raw_confidence": 0.9744960178169819,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      2016,
+      0,
+      2272,
+      256
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:58.925104Z"
+  },
+  {
+    "detection_id": "1693569523.810.png_1",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\pipes\\images\\1693569523.810.png",
+    "class": "pipe",
+    "confidence": 0.965,
+    "raw_confidence": 0.9651963237388609,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      1824,
+      96,
+      2080,
+      352
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:58.925115Z"
+  },
+  {
+    "detection_id": "1693569523.810.png_2",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\pipes\\images\\1693569523.810.png",
+    "class": "pipe",
+    "confidence": 0.943,
+    "raw_confidence": 0.9497738440616139,
+    "shadow_multiplier": 0.993,
+    "bbox_px": [
+      1536,
+      0,
+      1792,
+      256
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:58.925119Z"
+  },
+  {
+    "detection_id": "1693569523.810.png_3",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\pipes\\images\\1693569523.810.png",
+    "class": "pipe",
+    "confidence": 0.947,
+    "raw_confidence": 0.9490159683965487,
+    "shadow_multiplier": 0.998,
+    "bbox_px": [
+      1536,
+      192,
+      1792,
+      448
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:58.925123Z"
+  },
+  {
+    "detection_id": "1693569523.810.png_4",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\pipes\\images\\1693569523.810.png",
+    "class": "pipe",
+    "confidence": 0.833,
+    "raw_confidence": 0.9365425355518733,
+    "shadow_multiplier": 0.889,
+    "bbox_px": [
+      2208,
+      96,
+      2464,
+      352
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:58.925127Z"
+  },
+  {
+    "detection_id": "1693569523.810.png_5",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\pipes\\images\\1693569523.810.png",
+    "class": "pipe",
+    "confidence": 0.843,
+    "raw_confidence": 0.9179567129003686,
+    "shadow_multiplier": 0.918,
+    "bbox_px": [
+      2016,
+      192,
+      2272,
+      448
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:58.925140Z"
+  },
+  {
+    "detection_id": "1693569523.810.png_6",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\pipes\\images\\1693569523.810.png",
+    "class": "pipe",
+    "confidence": 0.916,
+    "raw_confidence": 0.9156563200482437,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      768,
+      192,
+      1024,
+      448
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:58.925144Z"
+  },
+  {
+    "detection_id": "1693569523.810.png_7",
+    "source_image": "C:\\Users\\chinn\\Downloads\\echotrace_prototype\\data\\pipes\\images\\1693569523.810.png",
+    "class": "pipe",
+    "confidence": 0.899,
+    "raw_confidence": 0.898860669322629,
+    "shadow_multiplier": 1.0,
+    "bbox_px": [
+      480,
+      96,
+      736,
+      352
+    ],
+    "geotag": "not_available_no_nav_metadata",
+    "detected_at": "2026-09-13T18:47:58.925147Z"
+  }
+]
