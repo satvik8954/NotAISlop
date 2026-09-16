@@ -2,30 +2,25 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { MOCK_SCAN_RESULTS, CLASS_COLORS, CLASS_LABELS } from '@/lib/mockData';
+import { CLASS_COLORS, CLASS_LABELS } from '@/lib/mockData';
 import { DetectionList } from '@/components/DetectionList';
 import DetectionCanvas from '@/components/DetectionCanvas';
 import type { Detection } from '@/lib/types';
+import { getScans } from '@/lib/store';
 
 const ALL_CLASSES = ['shipwreck', 'pipe', 'cylinder', 'ghost_net'];
 
-// Synthetically generated sonar-like placeholder images
-const PLACEHOLDER_IMAGES: Record<string, string> = {
-  'Corsair_01.png': '/api/placeholder/corsair',
-  'Monrovia_02.png': '/api/placeholder/monrovia',
-  '1693569523.810.png': '/api/placeholder/pipe',
-  '0003_2021.png': '/api/placeholder/cylinder',
-};
-
 export default function ResultsPage() {
-  const [selectedScan, setSelectedScan] = useState(MOCK_SCAN_RESULTS[0]);
+  const scans = getScans();
+  const [selectedScan, setSelectedScan] = useState(scans[0]);
   const [selectedDetectionId, setSelectedDetectionId] = useState<string | null>(null);
   const [minConfidence, setMinConfidence] = useState(0.0);
   const [activeClasses, setActiveClasses] = useState<Set<string>>(new Set());
 
-  const allDetections: Detection[] = MOCK_SCAN_RESULTS.flatMap(r => r.detections);
+  const allDetections: Detection[] = scans.flatMap(r => r.detections);
 
   const filteredDetections = useMemo(() => {
+    if (!selectedScan) return [];
     return selectedScan.detections.filter(d =>
       d.confidence >= minConfidence &&
       (activeClasses.size === 0 || activeClasses.has(d.class))
@@ -41,7 +36,33 @@ export default function ResultsPage() {
     });
   };
 
-  const totalDetections = MOCK_SCAN_RESULTS.reduce((s, r) => s + r.detections.length, 0);
+  // No analysis yet (e.g. direct navigation to /results)
+  if (scans.length === 0) {
+    return (
+      <main className="page">
+        <div className="container">
+          <div className="page-header"><div className="page-header-inner">
+            <div>
+              <div className="page-breadcrumb">
+                <Link href="/">EchoTrace</Link><span>›</span><span>Results</span>
+              </div>
+              <h1 style={{ fontSize: '2rem' }}>Detection Results</h1>
+            </div>
+          </div></div>
+          <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📡</div>
+            <div style={{ fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.5rem' }}>No analysis yet</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              Run the detection pipeline first — results will appear here.
+            </div>
+            <Link href="/analyze" className="btn btn-primary">🚀 Go to Analyze</Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  const totalDetections = allDetections.length;
   const classCounts: Record<string, number> = {};
   for (const d of allDetections) {
     classCounts[d.class] = (classCounts[d.class] || 0) + 1;
@@ -62,7 +83,7 @@ export default function ResultsPage() {
               </div>
               <h1 style={{ fontSize: '2rem' }}>Detection Results</h1>
               <p style={{ color: 'var(--text-secondary)', marginTop: '0.375rem' }}>
-                {totalDetections} detections across {MOCK_SCAN_RESULTS.length} sonar scans
+                {totalDetections} detections across {scans.length} sonar scans
               </p>
             </div>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -81,7 +102,7 @@ export default function ResultsPage() {
           <div className="stat-card">
             <div className="stat-label">Total Detections</div>
             <div className="stat-value" style={{ color: 'var(--sonar-cyan)' }}>{totalDetections}</div>
-            <div className="stat-sub">across {MOCK_SCAN_RESULTS.length} images</div>
+            <div className="stat-sub">across {scans.length} images</div>
           </div>
           {Object.entries(classCounts).map(([cls, count]) => (
             <div key={cls} className="stat-card">
@@ -95,7 +116,7 @@ export default function ResultsPage() {
           <div className="stat-card">
             <div className="stat-label">Avg Confidence</div>
             <div className="stat-value" style={{ color: 'var(--bio-green)' }}>
-              {(allDetections.reduce((s, d) => s + d.confidence, 0) / allDetections.length * 100).toFixed(0)}%
+              {totalDetections > 0 ? (allDetections.reduce((s, d) => s + d.confidence, 0) / totalDetections * 100).toFixed(0) : 0}%
             </div>
             <div className="stat-sub">after shadow filter</div>
           </div>
@@ -103,7 +124,7 @@ export default function ResultsPage() {
 
         {/* Scan selector */}
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-          {MOCK_SCAN_RESULTS.map(r => (
+          {scans.map(r => (
             <button
               key={r.imageName}
               className={`chip ${selectedScan.imageName === r.imageName ? 'active' : ''}`}
@@ -147,11 +168,13 @@ export default function ResultsPage() {
                 </div>
               </div>
               <div className="image-canvas-wrap">
-                <SonarImageCanvas
-                  imageName={selectedScan.imageName}
-                  detections={filteredDetections}
+                <DetectionCanvas
+                  imageSrc={selectedScan.imageDataUrl ?? null}
+                  detections={selectedScan.detections}
                   selectedId={selectedDetectionId}
-                  onSelect={setSelectedDetectionId}
+                  onSelectDetection={setSelectedDetectionId}
+                  minConfidence={minConfidence}
+                  activeClasses={activeClasses}
                 />
               </div>
             </div>
@@ -169,8 +192,8 @@ export default function ResultsPage() {
                     {[
                       { label: 'Class', value: CLASS_LABELS[d.class] ?? d.class },
                       { label: 'Confidence', value: `${(d.confidence * 100).toFixed(1)}%` },
-                      { label: 'Raw Confidence', value: `${(d.raw_confidence * 100).toFixed(1)}%` },
-                      { label: 'Shadow ×', value: d.shadow_multiplier.toFixed(3) },
+                      { label: 'Raw Confidence', value: d.raw_confidence !== null && d.raw_confidence !== undefined ? `${(d.raw_confidence * 100).toFixed(1)}%` : '—' },
+                      { label: 'Shadow ×', value: d.shadow_multiplier !== null && d.shadow_multiplier !== undefined ? d.shadow_multiplier.toFixed(3) : '—' },
                       { label: 'BBox', value: `[${d.bbox_px.join(', ')}]` },
                       { label: 'Geotag', value: typeof d.geotag === 'object' ? `${d.geotag.lat}, ${d.geotag.lon}` : 'N/A' },
                       { label: 'Detected', value: new Date(d.detected_at).toLocaleTimeString() },
@@ -257,173 +280,4 @@ export default function ResultsPage() {
       </div>
     </main>
   );
-}
-
-// Canvas component that generates a synthetic sonar-like background
-function SonarImageCanvas({
-  imageName,
-  detections,
-  selectedId,
-  onSelect,
-}: {
-  imageName: string;
-  detections: Detection[];
-  selectedId: string | null;
-  onSelect: (id: string) => void;
-}) {
-  const canvasRef = useState<HTMLCanvasElement | null>(null);
-
-  // Use a synthetic sonar-like pattern as background
-  return (
-    <SonarCanvas
-      key={imageName}
-      imageName={imageName}
-      detections={detections}
-      selectedId={selectedId}
-      onSelect={onSelect}
-    />
-  );
-}
-
-// Generates synthetic sonar scan with detection overlays
-function SonarCanvas({
-  imageName,
-  detections,
-  selectedId,
-  onSelect,
-}: {
-  imageName: string;
-  detections: Detection[];
-  selectedId: string | null;
-  onSelect: (id: string) => void;
-}) {
-  const canvasRef = useState<HTMLCanvasElement | null>(null);
-
-  const refCallback = (canvas: HTMLCanvasElement | null) => {
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const W = 800, H = 400;
-    canvas.width = W;
-    canvas.height = H;
-
-    // Background: dark water column
-    ctx.fillStyle = '#08111a';
-    ctx.fillRect(0, 0, W, H);
-
-    // Nadir (center dark strip)
-    const nadirGrad = ctx.createLinearGradient(W * 0.35, 0, W * 0.65, 0);
-    nadirGrad.addColorStop(0, 'transparent');
-    nadirGrad.addColorStop(0.5, 'rgba(0,0,0,0.8)');
-    nadirGrad.addColorStop(1, 'transparent');
-    ctx.fillStyle = nadirGrad;
-    ctx.fillRect(0, 0, W, H);
-
-    // Sonar texture: random noise-like columns
-    const seed = imageName.charCodeAt(0) * 31 + imageName.charCodeAt(1) * 17;
-    for (let x = 0; x < W; x += 2) {
-      for (let y = 0; y < H; y += 2) {
-        const n = pseudoRandom(x + seed, y + seed * 2);
-        const distFromCenter = Math.abs(x - W / 2) / (W / 2);
-        const intensity = n * (0.3 + distFromCenter * 0.5);
-        const v = Math.floor(intensity * 100);
-        ctx.fillStyle = `rgba(${v * 0.6 | 0}, ${v | 0}, ${v * 0.8 | 0}, 0.7)`;
-        ctx.fillRect(x, y, 2, 2);
-      }
-    }
-
-    // Horizontal scan lines
-    for (let y = 0; y < H; y += 4) {
-      ctx.strokeStyle = `rgba(0, 180, 220, ${0.03 + pseudoRandom(0, y) * 0.04})`;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(W, y);
-      ctx.stroke();
-    }
-
-    // Draw detections scaled to canvas size
-    // Find bbox bounds for this image to scale relative to it
-    if (detections.length === 0) return;
-    const maxX = Math.max(...detections.map(d => d.bbox_px[2]));
-    const maxY = Math.max(...detections.map(d => d.bbox_px[3]));
-    const imgW = Math.max(maxX + 256, 1500);
-    const imgH = Math.max(maxY + 256, 1800);
-    const sx = W / imgW;
-    const sy = H / imgH;
-
-    for (const d of detections) {
-      const [x1, y1, x2, y2] = d.bbox_px;
-      const rx1 = x1 * sx, ry1 = y1 * sy;
-      const rw = (x2 - x1) * sx, rh = (y2 - y1) * sy;
-      const color = CLASS_COLORS[d.class] ?? '#fff';
-      const isSelected = d.detection_id === selectedId;
-
-      // Shadow simulation
-      ctx.fillStyle = 'rgba(0,0,0,0.4)';
-      ctx.fillRect(rx1, ry1 + rh, rw, rh * 0.5);
-
-      // Object highlight
-      const hlGrad = ctx.createLinearGradient(rx1, ry1, rx1 + rw, ry1 + rh);
-      hlGrad.addColorStop(0, color + '40');
-      hlGrad.addColorStop(1, color + '15');
-      ctx.fillStyle = hlGrad;
-      ctx.fillRect(rx1, ry1, rw, rh);
-
-      // Border
-      ctx.shadowColor = color;
-      ctx.shadowBlur = isSelected ? 18 : 6;
-      ctx.strokeStyle = color + (isSelected ? 'ff' : '99');
-      ctx.lineWidth = isSelected ? 2.5 : 1.5;
-      ctx.strokeRect(rx1 + 1, ry1 + 1, rw - 2, rh - 2);
-      ctx.shadowBlur = 0;
-
-      // Label
-      const label = `${CLASS_LABELS[d.class] ?? d.class} ${(d.confidence * 100).toFixed(0)}%`;
-      ctx.font = `bold ${isSelected ? 12 : 10}px "Space Mono", monospace`;
-      const tw = ctx.measureText(label).width;
-      ctx.fillStyle = color;
-      ctx.fillRect(rx1, Math.max(0, ry1 - 17), tw + 10, 17);
-      ctx.fillStyle = '#000';
-      ctx.fillText(label, rx1 + 5, Math.max(13, ry1 - 3));
-    }
-  };
-
-  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = e.currentTarget;
-    const rect = canvas.getBoundingClientRect();
-    const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
-    const my = (e.clientY - rect.top) * (canvas.height / rect.height);
-
-    if (detections.length === 0) return;
-    const maxX = Math.max(...detections.map(d => d.bbox_px[2]));
-    const maxY = Math.max(...detections.map(d => d.bbox_px[3]));
-    const imgW = Math.max(maxX + 256, 1500);
-    const imgH = Math.max(maxY + 256, 1800);
-    const sx = canvas.width / imgW;
-    const sy = canvas.height / imgH;
-
-    for (const d of [...detections].reverse()) {
-      const [x1, y1, x2, y2] = d.bbox_px;
-      if (mx >= x1 * sx && mx <= x2 * sx && my >= y1 * sy && my <= y2 * sy) {
-        onSelect(d.detection_id === selectedId ? '' : d.detection_id);
-        return;
-      }
-    }
-    onSelect('');
-  };
-
-  return (
-    <canvas
-      ref={refCallback}
-      onClick={handleClick}
-      style={{ maxWidth: '100%', cursor: 'crosshair', display: 'block' }}
-    />
-  );
-}
-
-function pseudoRandom(x: number, y: number): number {
-  const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
-  return n - Math.floor(n);
 }

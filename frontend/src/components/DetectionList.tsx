@@ -73,10 +73,10 @@ export function DetectionList({ detections, selectedId, onSelect }: DetectionLis
           <div className="detection-item-header">
             <ClassBadge cls={d.class} />
             <div className="shadow-chip">
-              shadow ×{d.shadow_multiplier.toFixed(3)}
+              shadow ×{d.shadow_multiplier?.toFixed(3) ?? '—'}
             </div>
           </div>
-          <ConfidenceBar value={d.confidence} rawValue={d.raw_confidence} showRaw />
+          <ConfidenceBar value={d.confidence} rawValue={d.raw_confidence ?? undefined} showRaw />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div className="detection-id">{d.detection_id}</div>
             <div style={{
