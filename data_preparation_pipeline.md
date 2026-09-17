@@ -1,63 +1,200 @@
 # EchoTrace SSS Data Preparation Pipeline
 
 ## 1. Overview
-This pipeline outlines the process of unifying four distinct Side-Scan Sonar (SSS) datasets into a single, training-ready YOLO format dataset for the EchoTrace marine debris detection model.
+This pipeline outlines the process of unifying four distinct Side-Scan Sonar (SSS) datasets into a single, perfectly balanced, YOLO-formatted dataset (`dataset_final`).
 
-## 2. Available Datasets & Context
-The project aims to detect man-made debris (shipwrecks, pipes, cylinders, ghost gear) and filter out natural clutter using acoustic shadow consistency.
+Because side-scan sonar imagery is highly prone to false positives from natural acoustic clutter (rocks, sand ripples), this pipeline heavily emphasizes **Hard Negative Mining** (implicit clutter) and **Explicit Clutter** classification.
 
-### Datasets Included:
-1. **AI4Shipwrecks (Shipwrecks):** 
-   - 286 images, 161 with wrecks (125 implicit negative backgrounds). 
-   - Labels: Pixel masks (need conversion to YOLO boxes). 
-   - Source: EdgeTech 2205.
-2. **SubPipe Mini2 (Pipes):** 
-   - 10,030 images, 6,335 boxes. 
-   - Labels: YOLO/COCO. 
-   - Note: Exclude camera data; only use SSS subset.
-3. **Gavia MILCO / NOMBO (Cylinders & Negatives):** 
-   - 1,170 images. 
-   - Labels: YOLO (Class 0 = MILCO/Cylinder, Class 1 = NOMBO/Clutter). 
-   - Source: Gavia AUV.
-4. **GhostVision (Ghost Nets / Crab Pots):** 
-   - 6,674 images. 
-   - Labels: JSONL (needs conversion). 
-   - Source: Humminbird SSS.
+## 2. Prerequisites
+Before running the final dataset builder, ensure your environment is set up.
 
-### Excluded / Avoided Data:
-- **SeabedObjects-KLSG:** This dataset only provides image-level classification (chips) without bounding boxes or masks. Therefore, **it cannot be used for object detection training.**
-- **Marine PULSE:** Similar to KLSG, lacks bounding boxes.
-- **FLS/Camera/RGB Data:** Irrelevant to the SSS objective.
+### Environment & Libraries
+* **Python 3.8+**
+* Required Python packages:
+  ```bash
+  pip install Pillow opencv-python
+  ```
+## 1. Prerequisites
 
-## 3. Metadata & Scale Inconsistencies
-Side-scan sonar images heavily depend on the sonar's altitude, range, and frequency.
-*   **Scale Variance:** A shipwreck can span 50 meters, a pipe can cross the entire swath, while a cylinder or crab pot is usually 1-2 meters.
-*   **Physical Properties:** The `README` states `object_height ≈ shadow_length × (altitude / range)`. Combining these datasets means mixing different altitudes and ranges. 
-*   **Resolution:** Images from Gavia AUV and EdgeTech 2205 will have different spatial resolutions (meters/pixel).
-*   **Consistency Strategy:** When combining, we must **never alter the aspect ratio** drastically. Resizing must use padding (letterboxing). Augmentations that break shadow geometry (like arbitrary rotations) must be restricted.
+Run the commands below from the repository root (`NotAISlop`). Windows users can use `py -3`; `python` is also fine when it points to Python 3.8 or newer.
 
-## 4. Handling Negative Labels
-Negative samples are crucial to reduce false positives from natural acoustic clutter (rocks, sand ripples).
-*   **Explicit Negatives (NOMBO):** The Gavia dataset provides explicit bounding boxes for NOMBOs (Non-Mine-Like Bottom Objects). These can be used as a "clutter" class or background.
-*   **Implicit Negatives:** AI4Shipwrecks has 125 images with no wrecks. We include these in YOLO format simply by providing an image with an empty `.txt` annotation file.
+```powershell
+py -3 --version
+py -3 -m venv .venv
+.venv\Scripts\Activate.ps1
+py -3 -m pip install --upgrade pip
+py -3 -m pip install Pillow opencv-python numpy
+```
 
-## 5. Unified YOLO Class Mapping
-To combine the datasets, we remap all classes into a single unified schema:
-*   `0`: shipwreck
-*   `1`: pipe
-*   `2`: cylinder (from MILCO)
-*   `3`: ghost_gear (from crab pots)
-*   `4`: clutter (from NOMBO)
+Additional packages are needed only for downloading through their APIs:
 
-## 6. Augmentation Strategy
-Given the physics of side-scan sonar, augmentations must be acoustically plausible:
-*   **Allowed:** Horizontal flips (only if the nadir line location doesn't break model assumptions, otherwise restricted), Contrast adjustment, Gaussian Noise, Speckle Noise, brightness variations.
-*   **Avoid:** 90-degree or arbitrary rotations (this breaks the directional nature of shadows relative to the sonar ping), Vertical flips (can flip the shadow to the wrong side of the highlight depending on where nadir is).
+```powershell
+py -3 -m pip install -U huggingface_hub
+py -3 -m pip install roboflow
+```
 
-## 7. Pipeline Steps
-1. **Extraction & Mask Conversion:** Unzip archives. Convert AI4Shipwrecks masks to bounding boxes (using `masks_to_boxes.py`).
-2. **Standardization:** Convert GhostVision JSONL and SubPipe COCO annotations to YOLO format.
-3. **Class Remapping:** Rewrite all `.txt` files to use the unified class mapping.
-4. **Train/Val/Test Split:** Randomly distribute the unified dataset into 70/20/10 splits.
-5. **Augmentation:** Apply Albumentations (speckle noise, contrast) to the training set only.
-6. **YOLO YAML Generation:** Create a `data.yaml` pointing to the unified directories.
+The final builder itself requires Pillow. Internet access and enough local disk space are required for the source archives and generated output. Do not commit the downloaded datasets or `dataset_final/`; they are large generated artifacts.
+
+## 2. Obtain the source datasets
+
+The authoritative links and dataset notes are in [`data/README.md`](data/README.md). Keep only SSS detection data; do not substitute camera, FLS, DIDSON, or classification-only datasets.
+
+### AI4Shipwrecks
+
+Download the AI4Shipwrecks archive from the Deep Blue link in `data/README.md`, extract it, and arrange the result as:
+
+```text
+data/AI4Shipwrecks/
+   train/images/*.png
+   train/masks/*.png
+   test/images/*.png
+   test/masks/*.png
+   extras/terrain/images/*.png       # optional hard negatives
+```
+
+Convert the masks to one YOLO box per wreck image:
+
+```powershell
+py -3 train/masks_to_boxes.py --root data/AI4Shipwrecks
+```
+
+This creates `boxes/` beside each `masks/` directory. The final builder reads those generated box files.
+
+### SubPipe Mini2
+
+Download `SubPipeMini2.zip` from the Zenodo link in `data/README.md`. Extract the ZIP64 archive to exactly:
+
+```text
+data/SubPipeMini2/SubPipeMiniSSS/DATA/
+   SSS_HF_images/Image/*.pbm
+   SSS_HF_images/YOLO_Annotation/*.txt
+   SSS_LF_images/Image/*.pbm
+   SSS_LF_images/YOLO_Annotation/*.txt
+```
+
+Do not use `SubPipeMini` (camera segmentation) or the full 28 GB `SubPipe` dump for this pipeline. The builder converts PBM images to RGB JPEG files automatically.
+
+### Gavia MILCO/NOMBO
+
+Download one or more of the Gavia SSS ZIP files from Figshare, using the direct links in `data/README.md`. For the Roboflow export used by the current layout, place the extracted YOLO dataset at:
+
+```text
+data/cylinders/cylider2.v6i.yolov8/
+   data.yaml
+   train/images/   train/labels/
+   valid/images/   valid/labels/
+   test/images/    test/labels/
+```
+
+The source class mapping is `0 = MILCO` and `1 = NOMBO`. The final builder maps MILCO to `cylinder` and NOMBO to `clutter`.
+
+If downloading from Roboflow instead, provide an API key and run:
+
+```powershell
+$env:ROBOFLOW_API_KEY = "<your-key>"
+py -3 train/download_roboflow_images.py --out data/cylinders/cylider2.v6i.yolov8 --keep-labels
+```
+
+Never put the API key in a file or commit it.
+
+### GhostVision crab pots
+
+This dataset is gated. First accept the dataset terms at the Hugging Face page listed in `data/README.md`, then authenticate:
+
+```powershell
+hf auth login
+```
+
+Alternatively set `HF_TOKEN` in the current shell. Download the complete repository with:
+
+```powershell
+py -3 train/download_hf_dataset.py
+```
+
+The expected result is:
+
+```text
+data/ghost_nets/hf/sss-crab-pot-detection-ds/
+   train/metadata.jsonl
+   valid/metadata.jsonl
+   test/metadata.jsonl
+   train/*.jpg or *.png
+   valid/*.jpg or *.png
+   test/*.jpg or *.png
+```
+
+The JSONL files provide pixel-coordinate bounding boxes. The final builder reads the image dimensions and converts them to normalized YOLO coordinates.
+
+## 3. Check prerequisites before building
+
+From the repository root, confirm that these directories exist:
+
+```powershell
+Test-Path data/AI4Shipwrecks/train/images
+Test-Path data/AI4Shipwrecks/train/boxes
+Test-Path data/SubPipeMini2/SubPipeMiniSSS/DATA/SSS_HF_images/Image
+Test-Path data/cylinders/cylider2.v6i.yolov8/train/images
+Test-Path data/ghost_nets/hf/sss-crab-pot-detection-ds/train/metadata.jsonl
+```
+
+Every command should return `True`. A missing source is silently skipped by the builder, so these checks prevent accidentally creating an incomplete dataset.
+
+## 4. Build the final dataset
+
+Use `build_final_balanced_optimal.py` as the canonical builder:
+
+```powershell
+py -3 build_final_balanced_optimal.py
+```
+
+The script:
+
+1. Reads all available source records using the mappings above.
+2. Converts GhostVision boxes to YOLO format and SubPipe PBM images to JPEG.
+3. Samples at most 200 records per class, including up to 200 background hard negatives.
+4. Uses a deterministic random seed (`42`) and assigns an approximately 80/10/10 train/validation/test split.
+5. Writes `dataset_final/{train,val,test}/{images,labels}/` and `dataset_final/data.yaml`.
+
+The output class IDs are:
+
+```text
+0 shipwreck
+1 pipe
+2 cylinder
+3 ghost_gear
+4 clutter
+```
+
+The builder derives paths from its own location, so it can be run from any working directory inside a checkout.
+
+## 5. Validate the result
+
+Check that every image has a matching label file, including empty files for backgrounds:
+
+```powershell
+py -3 -m py_compile build_final_balanced_optimal.py train/masks_to_boxes.py
+Get-ChildItem dataset_final -Recurse -File | Measure-Object
+Get-ChildItem dataset_final/train/images -File | Measure-Object
+Get-ChildItem dataset_final/train/labels -File | Measure-Object
+Get-Content dataset_final/data.yaml
+```
+
+For a quick visual check, inspect a few files from each output split. Empty label files are intentional: they represent hard-negative seafloor images and must remain paired with their images.
+
+## 6. Other builders
+
+`build_final_dataset.py` creates an older unbalanced `unified_dataset/` output, and `build_optimal_dataset.py` creates the earlier `unified_dataset_optimal/` output. They are retained for comparison and are not the recommended final-dataset path.
+
+## 7. Publish the data-preparation code
+
+Commit the scripts and documentation, but keep downloaded data, virtual environments, caches, and generated datasets out of Git. Review the staged file list before pushing:
+
+```powershell
+git add data_preparation_pipeline.md build_final_balanced_optimal.py build_final_dataset.py build_optimal_dataset.py curate_dataset.py extract_and_balance.py train/download_hf_dataset.py train/download_roboflow_images.py train/extract_truncated_zip.py train/masks_to_boxes.py train/sample_remote_zip.py train/setup_detection_dataset.py
+git status --short
+git diff --cached --check
+git commit -m "Document and publish SSS data preparation pipeline"
+git push origin main
+```
+
+Do not use `git add .` for this repository unless large data files have been explicitly excluded. Before pushing, verify that no `.zip`, image corpus, token, `.venv/`, or `dataset_final/` path appears in `git diff --cached --name-only`.
