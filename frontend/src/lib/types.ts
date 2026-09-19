@@ -1,11 +1,11 @@
 export interface Detection {
   detection_id: string;
   source_image: string;
-  class: 'shipwreck' | 'pipe' | 'cylinder' | 'ghost_net';
+  class: 'shipwreck' | 'pipe' | 'cylinder' | 'ghost_net' | string;
   confidence: number;
-  raw_confidence: number;
-  shadow_multiplier: number;
-  bbox_px: [number, number, number, number]; // [x1, y1, x2, y2]
+  raw_confidence: number | null;
+  shadow_multiplier: number | null;
+  bbox_px: [number, number, number, number]; // [x1, y1, x2, y2] in original image pixels
   geotag: string | { lat: number; lon: number };
   detected_at: string;
 }
@@ -20,7 +20,9 @@ export interface PipelineStep {
 
 export interface ScanResult {
   imageName: string;
-  imagePath: string;
+  imageDataUrl?: string;         // data: URL raster served by the backend
+  imageWidth: number;            // original image px (bbox coordinate space)
+  imageHeight: number;
   detections: Detection[];
   processedAt: string;
 }

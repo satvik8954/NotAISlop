@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useCallback, useState } from 'react';
+import { useRef, useEffect, useCallback, useMemo } from 'react';
 import type { Detection } from '@/lib/types';
 import { CLASS_COLORS } from '@/lib/mockData';
 
@@ -23,10 +23,16 @@ export default function DetectionCanvas({
 }: DetectionCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
-  const [scale, setScale] = useState({ x: 1, y: 1 });
+  // Canvas-to-image scale lives in a ref: it's needed at click time only and
+  // putting it in state would re-render (and thus redraw) on every draw.
+  const scaleRef = useRef({ x: 1, y: 1 });
 
-  const filtered = detections.filter(
-    d => d.confidence >= minConfidence && (activeClasses.size === 0 || activeClasses.has(d.class))
+  // Memoized so drawCanvas keeps a stable identity across renders.
+  const filtered = useMemo(
+    () => detections.filter(
+      d => d.confidence >= minConfidence && (activeClasses.size === 0 || activeClasses.has(d.class))
+    ),
+    [detections, minConfidence, activeClasses]
   );
 
   const drawCanvas = useCallback(() => {
@@ -45,7 +51,7 @@ export default function DetectionCanvas({
 
     canvas.width = displayW;
     canvas.height = displayH;
-    setScale({ x: ratio, y: ratio });
+    scaleRef.current = { x: ratio, y: ratio };
 
     // Draw image
     ctx.drawImage(img, 0, 0, displayW, displayH);
@@ -124,8 +130,8 @@ export default function DetectionCanvas({
 
     for (const d of [...filtered].reverse()) {
       const [x1, y1, x2, y2] = d.bbox_px;
-      const sx1 = x1 * scale.x, sy1 = y1 * scale.y;
-      const sx2 = x2 * scale.x, sy2 = y2 * scale.y;
+      const sx1 = x1 * scaleRef.current.x, sy1 = y1 * scaleRef.current.y;
+      const sx2 = x2 * scaleRef.current.x, sy2 = y2 * scaleRef.current.y;
       if (mx >= sx1 && mx <= sx2 && my >= sy1 && my <= sy2) {
         onSelectDetection(d.detection_id);
         return;

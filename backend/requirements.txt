@@ -1,0 +1,13 @@
+# EchoTrace API dependencies.
+# The detection pipeline itself (detect.py, shadow_filter.py, report.py at the
+# repo root) additionally needs opencv-python, scikit-image, scikit-learn,
+# joblib and numpy -- install via:
+#   pip install -r requirements.txt
+fastapi==0.115.6
+uvicorn==0.34.0
+opencv-python
+scikit-image
+scikit-learn
+joblib
+numpy
+python-multipart

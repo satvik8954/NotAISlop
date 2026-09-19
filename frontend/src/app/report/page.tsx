@@ -2,23 +2,27 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { MOCK_SCAN_RESULTS, MOCK_DETECTIONS, CLASS_COLORS, CLASS_LABELS, computeStats } from '@/lib/mockData';
+import { CLASS_COLORS, CLASS_LABELS, computeStats } from '@/lib/mockData';
 import { ClassBadge, ConfidenceBar } from '@/components/DetectionList';
 import type { Detection } from '@/lib/types';
+import { getScans } from '@/lib/store';
 
 type SortKey = 'confidence' | 'class' | 'shadow_multiplier' | 'detected_at';
 type SortDir = 'asc' | 'desc';
 
 export default function ReportPage() {
+  const scans = getScans();
+  const allDetections: Detection[] = scans.flatMap(s => s.detections);
+
   const [sortKey, setSortKey] = useState<SortKey>('confidence');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [filterClass, setFilterClass] = useState<string>('all');
   const [minConf, setMinConf] = useState(0);
 
-  const stats = useMemo(() => computeStats(MOCK_DETECTIONS), []);
+  const stats = useMemo(() => computeStats(allDetections), [allDetections]);
 
   const sorted = useMemo(() => {
-    let list = MOCK_DETECTIONS.filter(d =>
+    let list = allDetections.filter(d =>
       d.confidence >= minConf &&
       (filterClass === 'all' || d.class === filterClass)
     );
@@ -26,7 +30,7 @@ export default function ReportPage() {
     list.sort((a, b) => {
       let av: number | string, bv: number | string;
       if (sortKey === 'confidence') { av = a.confidence; bv = b.confidence; }
-      else if (sortKey === 'shadow_multiplier') { av = a.shadow_multiplier; bv = b.shadow_multiplier; }
+      else if (sortKey === 'shadow_multiplier') { av = a.shadow_multiplier ?? 0; bv = b.shadow_multiplier ?? 0; }
       else if (sortKey === 'class') { av = a.class; bv = b.class; }
       else { av = a.detected_at; bv = b.detected_at; }
       if (av < bv) return sortDir === 'asc' ? -1 : 1;
@@ -35,7 +39,7 @@ export default function ReportPage() {
     });
 
     return list;
-  }, [sortKey, sortDir, filterClass, minConf]);
+  }, [allDetections, sortKey, sortDir, filterClass, minConf]);
 
   const handleSort = (key: SortKey) => {
     if (key === sortKey) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -62,8 +66,8 @@ export default function ReportPage() {
       d.source_image,
       d.class,
       d.confidence,
-      d.raw_confidence,
-      d.shadow_multiplier,
+      d.raw_confidence ?? '',
+      d.shadow_multiplier ?? '',
       ...d.bbox_px,
       typeof d.geotag === 'object' ? `${d.geotag.lat},${d.geotag.lon}` : d.geotag,
       d.detected_at,
@@ -80,14 +84,39 @@ export default function ReportPage() {
 
   const confDistribution = useMemo(() => {
     const bins = [0, 0, 0, 0, 0]; // 0-20, 20-40, 40-60, 60-80, 80-100
-    for (const d of MOCK_DETECTIONS) {
+    for (const d of allDetections) {
       const bin = Math.min(4, Math.floor(d.confidence * 5));
       bins[bin]++;
     }
     return bins;
-  }, []);
+  }, [allDetections]);
 
-  const maxBin = Math.max(...confDistribution);
+  const maxBin = Math.max(...confDistribution, 1);
+
+  if (allDetections.length === 0 && scans.length === 0) {
+    return (
+      <main className="page">
+        <div className="container">
+          <div className="page-header"><div className="page-header-inner">
+            <div>
+              <div className="page-breadcrumb">
+                <Link href="/">EchoTrace</Link><span>›</span><span>Report</span>
+              </div>
+              <h1 style={{ fontSize: '2rem' }}>Detection Report</h1>
+            </div>
+          </div></div>
+          <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📋</div>
+            <div style={{ fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.5rem' }}>No report yet</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              Run the detection pipeline first — the structured report is generated from its output.
+            </div>
+            <Link href="/analyze" className="btn btn-primary">🚀 Go to Analyze</Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="page">
@@ -102,7 +131,7 @@ export default function ReportPage() {
               </div>
               <h1 style={{ fontSize: '2rem' }}>Detection Report</h1>
               <p style={{ color: 'var(--text-secondary)', marginTop: '0.375rem' }}>
-                Structured geotagged output from the EchoTrace prototype run
+                Structured geotagged output from the live EchoTrace pipeline run
               </p>
             </div>
             <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -121,7 +150,7 @@ export default function ReportPage() {
           <div className="stat-card">
             <div className="stat-label">Total Detections</div>
             <div className="stat-value" style={{ color: 'var(--sonar-cyan)' }}>{stats.total}</div>
-            <div className="stat-sub">across 4 scans</div>
+            <div className="stat-sub">across {scans.length} scans</div>
           </div>
           <div className="stat-card">
             <div className="stat-label">Avg Confidence</div>
@@ -187,14 +216,14 @@ export default function ReportPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                     <ClassBadge cls={cls} />
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                      {count} ({((count / stats.total) * 100).toFixed(0)}%)
+                      {count} ({stats.total > 0 ? ((count / stats.total) * 100).toFixed(0) : 0}%)
                     </span>
                   </div>
                   <div className="confidence-bar-track">
                     <div
                       className="confidence-bar-fill"
                       style={{
-                        width: `${(count / stats.total) * 100}%`,
+                        width: `${stats.total > 0 ? (count / stats.total) * 100 : 0}%`,
                         background: CLASS_COLORS[cls] ?? 'var(--sonar-cyan)',
                       }}
                     />
@@ -211,7 +240,7 @@ export default function ReportPage() {
             Per-Scan Summary
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-            {MOCK_SCAN_RESULTS.map(scan => {
+            {scans.map(scan => {
               const sc = computeStats(scan.detections);
               return (
                 <div key={scan.imageName} style={{
@@ -316,7 +345,7 @@ export default function ReportPage() {
                   </td>
                   <td>
                     <span className="mono" style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                      {(d.raw_confidence * 100).toFixed(1)}%
+                      {d.raw_confidence !== null && d.raw_confidence !== undefined ? `${(d.raw_confidence * 100).toFixed(1)}%` : '—'}
                     </span>
                   </td>
                   <td>
@@ -324,11 +353,11 @@ export default function ReportPage() {
                       className="mono"
                       style={{
                         fontSize: '0.8rem',
-                        color: d.shadow_multiplier >= 1 ? 'var(--bio-green)' : d.shadow_multiplier < 0.7 ? 'var(--coral)' : 'var(--text-secondary)',
+                        color: (d.shadow_multiplier ?? 1) >= 1 ? 'var(--bio-green)' : (d.shadow_multiplier ?? 1) < 0.7 ? 'var(--coral)' : 'var(--text-secondary)',
                         fontWeight: 600,
                       }}
                     >
-                      ×{d.shadow_multiplier.toFixed(3)}
+                      ×{d.shadow_multiplier?.toFixed(3) ?? '—'}
                     </span>
                   </td>
                   <td>
@@ -363,9 +392,9 @@ export default function ReportPage() {
           lineHeight: 1.6,
           marginBottom: '3rem',
         }}>
-          ⚠️ <strong>Note:</strong> Geotag field is <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.1rem 0.3rem', borderRadius: 3, fontFamily: 'var(--font-mono)' }}>not_available_no_nav_metadata</code> because
-          the sample PNG/JPG chips pulled from the repo carry no navigation metadata.
-          Real XTF/JSF sonar logs with GPS + heading will populate this field via <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.1rem 0.3rem', borderRadius: 3, fontFamily: 'var(--font-mono)' }}>ingest.py</code>.
+          ⚠️ <strong>Note:</strong> Without a nav track supplied on the Analyze page, the geotag field is
+          <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.1rem 0.3rem', borderRadius: 3, fontFamily: 'var(--font-mono)' }}>not_available_no_nav_metadata</code> because
+          the sample PNG/JPG chips carry no navigation metadata. Enter a survey-line nav track (start/end lat-lon) to interpolate coordinates, or parse real XTF/JSF logs once <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.1rem 0.3rem', borderRadius: 3, fontFamily: 'var(--font-mono)' }}>ingest.py</code> exists.
         </div>
       </div>
     </main>

@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import Link from 'next/link';
-import { MOCK_SCAN_RESULTS } from '@/lib/mockData';
 import type { PipelineStep } from '@/lib/types';
+import { analyzeDemo, analyzeUpload, API_BASE, type AnalyzeResponse } from '@/lib/api';
+import { setAnalysis } from '@/lib/store';
 
 const PIPELINE_STEPS: PipelineStep[] = [
-  { id: 'ingest', label: 'Ingest', description: 'Parse sonar log, extract nav metadata', status: 'pending' },
-  { id: 'preprocess', label: 'Preprocess', description: 'Denoise, correct geometry, tile 256×256', status: 'pending' },
+  { id: 'ingest', label: 'Ingest', description: 'Read sonar imagery, extract nav metadata', status: 'pending' },
+  { id: 'preprocess', label: 'Preprocess', description: 'Histogram equalisation, nadir guard (std < 8), 256×256 tiles', status: 'pending' },
   { id: 'detect', label: 'Detect', description: 'HOG+SVM sliding window + NMS', status: 'pending' },
   { id: 'shadow', label: 'Shadow Filter', description: 'Acoustic shadow consistency scoring', status: 'pending' },
   { id: 'report', label: 'Report', description: 'Generate geotagged JSON/CSV', status: 'pending' },
@@ -15,17 +16,31 @@ const PIPELINE_STEPS: PipelineStep[] = [
 
 type RunStatus = 'idle' | 'running' | 'done' | 'error';
 
+const NAV_PLACEHOLDER = '11.7401, 92.6586, 11.7455, 92.6612';
+
 export default function AnalyzePage() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [demoMode, setDemoMode] = useState(true);
-  const [probThresh, setProbThresh] = useState(0.55);
-  const [iouThresh, setIouThresh] = useState(0.3);
+  const [probThresh, setProbThresh] = useState(0.85);
+  const [iouThresh, setIouThresh] = useState(0.2);
+  const [stride, setStride] = useState(96);
   const [shadowEnabled, setShadowEnabled] = useState(true);
+  const [navTrack, setNavTrack] = useState('');
   const [steps, setSteps] = useState<PipelineStep[]>(PIPELINE_STEPS);
   const [runStatus, setRunStatus] = useState<RunStatus>('idle');
+  const [result, setResult] = useState<AnalyzeResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [apiUp, setApiUp] = useState<boolean | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Backend health check — banner if the FastAPI server isn't running
+  useEffect(() => {
+    fetch(`${API_BASE}/api/health`)
+      .then(r => r.ok ? setApiUp(true) : setApiUp(false))
+      .catch(() => setApiUp(false));
+  }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -42,38 +57,61 @@ export default function AnalyzePage() {
     }
   };
 
+  // Animate steps as the request progresses. Detection dominates runtime,
+  // so it gets the widest progress band; the bar completes when the response lands.
   const runPipeline = async () => {
     setRunStatus('running');
+    setError(null);
     setProgress(0);
-    const stepLabels = ['ingest', 'preprocess', 'detect', 'shadow', 'report'];
+    setSteps(PIPELINE_STEPS.map(s => ({ ...s, status: 'pending' })));
 
-    for (let i = 0; i < stepLabels.length; i++) {
-      // Mark current as running
-      setSteps(prev => prev.map((s, idx) => ({
-        ...s,
-        status: idx < i ? 'done' : idx === i ? 'running' : 'pending',
-      })));
-      setProgress((i / stepLabels.length) * 100);
+    const setStep = (idx: number, status: PipelineStep['status']) =>
+      setSteps(prev => prev.map((s, i) => i === idx ? { ...s, status } : s));
 
-      // Simulate processing time
-      const delays = [600, 800, 1800, 1000, 500];
-      await new Promise(r => setTimeout(r, delays[i]));
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      // quick visual pass over ingest/preprocess while the request is in flight
+      setStep(0, 'running');
+      setProgress(10);
+      timer = setTimeout(() => { setStep(0, 'done'); setStep(1, 'running'); setProgress(30); }, 400);
+      timer = setTimeout(() => { setStep(1, 'done'); setStep(2, 'running'); setProgress(50); }, 900);
+
+      const nav = navTrack.trim() ? navTrack.trim() : undefined;
+      const params = {
+        stride,
+        prob_thresh: probThresh,
+        iou_thresh: iouThresh,
+        shadow_filter: shadowEnabled,
+        nav_track: nav,
+      };
+      const res = demoMode
+        ? await analyzeDemo(params)
+        : await analyzeUpload(uploadedFiles, params);
+
+      clearTimeout(timer);
+      setSteps(prev => prev.map(s => ({ ...s, status: 'done' })));
+      setProgress(100);
+      setResult(res);
+      setAnalysis(res);
+      setRunStatus('done');
+    } catch (err) {
+      clearTimeout(timer);
+      setSteps(prev => prev.map(s => s.status === 'running' ? { ...s, status: 'error' } : s));
+      setError(err instanceof Error ? err.message : 'Pipeline failed');
+      setRunStatus('error');
     }
-
-    // All done
-    setSteps(prev => prev.map(s => ({ ...s, status: 'done' })));
-    setProgress(100);
-    setRunStatus('done');
   };
 
   const reset = () => {
     setSteps(PIPELINE_STEPS);
     setRunStatus('idle');
+    setResult(null);
+    setError(null);
     setProgress(0);
     if (!demoMode) setUploadedFiles([]);
   };
 
-  const canRun = demoMode || uploadedFiles.length > 0;
+  const canRun = (demoMode || uploadedFiles.length > 0) && runStatus !== 'running';
 
   return (
     <main className="page">
@@ -108,6 +146,17 @@ export default function AnalyzePage() {
           </div>
         </div>
 
+        {apiUp === false && (
+          <div style={{
+            padding: '0.875rem 1rem', marginBottom: '1.25rem',
+            background: 'hsla(38, 95%, 55%, 0.08)', border: '1px solid hsla(38, 95%, 55%, 0.3)',
+            borderRadius: 'var(--radius-md)', color: 'var(--amber)', fontSize: '0.85rem',
+          }}>
+            ⚠️ <strong>Backend offline.</strong> Start it with{' '}
+            <code style={{ fontFamily: 'var(--font-mono)' }}>cd backend && uvicorn main:app --port 8000</code>
+          </div>
+        )}
+
         <div className="analyze-layout">
           {/* Left: Upload + Pipeline */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -127,13 +176,13 @@ export default function AnalyzePage() {
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--sonar-cyan)' }}>Demo Mode Active</div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                      Using real detections from the EchoTrace prototype run on 4 test sonar images.
+                      Runs the real detection pipeline on 4 held-out test sonar images (AI4Shipwrecks, SubPipe, NOMBO).
                     </div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {MOCK_SCAN_RESULTS.map(r => (
-                    <div key={r.imageName} style={{
+                  {['Corsair_01.png — shipwreck test image', 'Monrovia_02.png — shipwreck test image', '1693569523.810.png — pipe image', '0003_2021.jpg — cylinder chip'].map(name => (
+                    <div key={name} style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: '0.625rem 0.875rem',
                       background: 'var(--bg-elevated)',
@@ -144,16 +193,9 @@ export default function AnalyzePage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                         <span style={{ opacity: 0.6 }}>🖼️</span>
                         <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                          {r.imageName}
+                          {name}
                         </span>
                       </div>
-                      <span style={{
-                        fontFamily: 'var(--font-mono)', fontSize: '0.75rem',
-                        color: 'var(--sonar-cyan)', background: 'hsla(195,100%,50%,0.1)',
-                        padding: '0.15rem 0.5rem', borderRadius: '4px',
-                      }}>
-                        {r.detections.length} detections
-                      </span>
                     </div>
                   ))}
                 </div>
@@ -196,7 +238,7 @@ export default function AnalyzePage() {
                 {steps.map((step, i) => (
                   <div key={step.id} className={`pipeline-step ${step.status}`}>
                     <div className="step-dot">
-                      {step.status === 'done' ? '✓' : step.status === 'running' ? '⟳' : i + 1}
+                      {step.status === 'done' ? '✓' : step.status === 'running' ? '⟳' : step.status === 'error' ? '!' : i + 1}
                     </div>
                     <div className="step-label">{step.label}</div>
                   </div>
@@ -214,14 +256,36 @@ export default function AnalyzePage() {
                 </div>
               )}
 
-              {runStatus === 'done' && (
+              {runStatus === 'error' && error && (
+                <div style={{
+                  padding: '0.875rem 1rem', borderRadius: 'var(--radius-md)',
+                  background: 'hsla(0, 85%, 55%, 0.08)', border: '1px solid hsla(0, 85%, 55%, 0.3)',
+                  color: 'var(--coral)', fontSize: '0.85rem',
+                }}>
+                  ❌ {error}
+                </div>
+              )}
+
+              {runStatus === 'done' && result && (
                 <div style={{
                   padding: '0.875rem 1rem', borderRadius: 'var(--radius-md)',
                   background: 'hsla(155, 85%, 45%, 0.08)', border: '1px solid hsla(155, 85%, 45%, 0.3)',
                   color: 'var(--bio-green)', fontSize: '0.875rem', fontWeight: 600,
                   display: 'flex', alignItems: 'center', gap: '0.5rem',
                 }}>
-                  ✅ Pipeline complete — {MOCK_SCAN_RESULTS.reduce((acc, r) => acc + r.detections.length, 0)} detections found
+                  ✅ Pipeline complete — {result.totalDetections} detections across {result.scans.length} image{result.scans.length !== 1 ? 's' : ''}
+                </div>
+              )}
+
+              {runStatus === 'done' && result?.errors && result.errors.length > 0 && (
+                <div style={{
+                  marginTop: '0.5rem', padding: '0.625rem 0.875rem', borderRadius: 'var(--radius-md)',
+                  background: 'hsla(38, 95%, 55%, 0.06)', border: '1px solid hsla(38, 95%, 55%, 0.25)',
+                  color: 'var(--amber)', fontSize: '0.8rem',
+                }}>
+                  {result.errors.map(e => (
+                    <div key={e.file}>⚠️ {e.file}: {e.error}</div>
+                  ))}
                 </div>
               )}
             </div>
@@ -295,38 +359,75 @@ export default function AnalyzePage() {
               </div>
             </div>
 
+            <div className="slider-wrap">
+              <div className="slider-header">
+                <label className="slider-label">Window Stride (px)</label>
+                <span className="slider-val">{stride}</span>
+              </div>
+              <input
+                type="range"
+                min={32}
+                max={192}
+                step={32}
+                value={stride}
+                onChange={e => setStride(Number(e.target.value))}
+              />
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                Sliding-window step (64 = dense/slow, 96 = demo default, 192 = fast)
+              </div>
+            </div>
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <h3>Options</h3>
-              {[
-                {
-                  id: 'shadow',
-                  label: 'Shadow-Consistency Filter',
-                  sub: 'Re-weight by acoustic shadow geometry',
-                  value: shadowEnabled,
-                  set: setShadowEnabled,
-                },
-              ].map(opt => (
-                <label
-                  key={opt.id}
-                  style={{
-                    display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
-                    padding: '0.875rem', borderRadius: 'var(--radius-md)',
-                    background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
-                    cursor: 'pointer', transition: 'border-color var(--transition-fast)',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={opt.value}
-                    onChange={e => opt.set(e.target.checked)}
-                    style={{ marginTop: '3px', accentColor: 'var(--sonar-cyan)', cursor: 'pointer' }}
-                  />
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{opt.label}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>{opt.sub}</div>
+              <label
+                style={{
+                  display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
+                  padding: '0.875rem', borderRadius: 'var(--radius-md)',
+                  background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
+                  cursor: 'pointer', transition: 'border-color var(--transition-fast)',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={shadowEnabled}
+                  onChange={e => setShadowEnabled(e.target.checked)}
+                  style={{ marginTop: '3px', accentColor: 'var(--sonar-cyan)', cursor: 'pointer' }}
+                />
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>Shadow-Consistency Filter</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>
+                    Re-weight confidence by acoustic shadow geometry
                   </div>
-                </label>
-              ))}
+                </div>
+              </label>
+
+              {/* Optional nav track for geotagging */}
+              <div
+                style={{
+                  padding: '0.875rem', borderRadius: 'var(--radius-md)',
+                  background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
+                }}
+              >
+                <div style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.25rem' }}>
+                  Nav Track <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(optional)</span>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                  start_lat, start_lon, end_lat, end_lon — interpolates geotags along the survey line
+                </div>
+                <input
+                  type="text"
+                  value={navTrack}
+                  onChange={e => setNavTrack(e.target.value)}
+                  placeholder={NAV_PLACEHOLDER}
+                  style={{
+                    width: '100%', padding: '0.5rem 0.625rem',
+                    fontFamily: 'var(--font-mono)', fontSize: '0.8rem',
+                    background: 'var(--bg-deep, #0a121c)', color: 'var(--text-primary)',
+                    border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm, 6px)',
+                    outline: 'none',
+                  }}
+                />
+              </div>
             </div>
 
             <div className="divider" style={{ margin: '0' }} />
@@ -336,9 +437,9 @@ export default function AnalyzePage() {
               <strong style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: '0.375rem' }}>
                 About the model
               </strong>
-              HOG + LinearSVM baseline trained on 269 labelled sonar tiles.
-              Sliding window stride: 64px. Tile size: 256×256.
-              Nadir guard threshold: std &lt; 8.0.
+              HOG + LinearSVM tile classifier, 71.6% held-out accuracy over
+              4 classes. Tile 256×256, stride 96px demo default, nadir guard std &lt; 8.0.
+              Runs live via FastAPI at <code style={{ fontFamily: 'var(--font-mono)' }}>localhost:8000</code>.
             </div>
           </div>
         </div>
